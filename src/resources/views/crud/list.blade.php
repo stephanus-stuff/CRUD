@@ -51,6 +51,12 @@
             <thead>
               <tr>
                 {{-- Table columns --}}
+                @if(!$crud->getOperationSetting('responsiveTable'))
+                    @php
+                        $crud->removeColumn('blank_first_column');
+                    @endphp
+                @endif
+
                 @foreach ($crud->columns() as $column)
                   <th
                     data-orderable="{{ var_export($column['orderable'], true) }}"
@@ -98,7 +104,6 @@
                     {!! $column['label'] !!}
                   </th>
                 @endforeach
-
                 @if ( $crud->buttons()->where('stack', 'line')->count() )
                   <th data-orderable="false" data-priority="{{ $crud->getActionsColumnPriority() }}" data-visible-in-export="false">{{ trans('backpack::crud.actions') }}</th>
                 @endif

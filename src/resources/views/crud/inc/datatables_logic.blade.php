@@ -1,8 +1,10 @@
   <!-- DATA TABLES SCRIPT -->
   <script type="text/javascript" src="{{ asset('packages/datatables.net/js/jquery.dataTables.min.js') }}"></script>
   <script type="text/javascript" src="{{ asset('packages/datatables.net-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
-  <script type="text/javascript" src="{{ asset('packages/datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
-  <script type="text/javascript" src="{{ asset('packages/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js') }}"></script>
+  @if($crud->getResponsiveTable())
+    <script type="text/javascript" src="{{ asset('packages/datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('packages/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js') }}"></script>
+  @endif
   <script type="text/javascript" src="{{ asset('packages/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js') }}"></script>
   <script type="text/javascript" src="{{ asset('packages/datatables.net-fixedheader-bs4/js/fixedHeader.bootstrap4.min.js') }}"></script>
 
@@ -85,7 +87,6 @@
         localStorage.setItem('{{ Str::slug($crud->getRoute()) }}_list_url', new_url);
       },
       dataTableConfiguration: {
-
         @if ($crud->getResponsiveTable())
         responsive: {
             details: {
@@ -99,10 +100,8 @@
                     }
                 } ),
                 renderer: function ( api, rowIdx, columns ) {
-
                   var data = $.map( columns, function ( col, i ) {
                       var columnHeading = crud.table.columns().header()[col.columnIndex];
-
                       // hide columns that have VisibleInModal false
                       if ($(columnHeading).attr('data-visible-in-modal') == 'false') {
                         return '';
@@ -300,6 +299,7 @@
              }
         } );
       @else
+
         // make sure the column headings have the same width as the actual columns
         // after the user manually resizes the window
         var resizeTimer;

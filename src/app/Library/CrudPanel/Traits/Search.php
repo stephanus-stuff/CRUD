@@ -136,6 +136,8 @@ trait Search
     public function disableResponsiveTable()
     {
         $this->setResponsiveTable(false);
+        //when disabling responsive table we remove the blank_first_column.
+        $this->removeColumn('blank_first_column');
     }
 
     // -------------------------
@@ -220,7 +222,6 @@ trait Search
                                 ->with('row_number', $rowNumber)
                                 ->render();
         }
-
         // add the details_row button to the first column
         if ($this->getOperationSetting('detailsRow')) {
             $details_row_button = \View::make('crud::columns.inc.details_row_button')
