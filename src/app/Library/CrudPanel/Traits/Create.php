@@ -194,6 +194,17 @@ trait Create
                 if ($relationData['values'][$relationMethod] !== null) {
                     $modelInstance->whereIn($modelInstance->getKeyName(), $relationData['values'][$relationMethod])
                             ->update([$relation->getForeignKeyName() => $item->{$relation->getLocalKeyName()}]);
+
+                    //we clear up any values that were removed from model relation.
+                    if(!$modelInstance->isColumnNullable($relation->getForeignKeyName())) {
+                        $modelInstance->whereNotIn($modelInstance->getKeyName(), $relationData['values'][$relationMethod])
+                                ->where($relation->getForeignKeyName(), $item->{$relation->getLocalKeyName()})
+                                ->delete();
+                    }else{
+                        $modelInstance->whereNotIn($modelInstance->getKeyName(), $relationData['values'][$relationMethod])
+                                ->where($relation->getForeignKeyName(), $item->{$relation->getLocalKeyName()})
+                                ->update([$relation->getForeignKeyName() => null]);
+                    }
                 }else{
                     //if the foreign key is not nullable we delete the record from the table.
                     if(!$modelInstance->isColumnNullable($relation->getForeignKeyName())) {
