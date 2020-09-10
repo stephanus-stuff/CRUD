@@ -330,6 +330,7 @@ function ajaxSearch(element, created) {
     var $relatedKeyName = element.attr('data-connected-entity-key-name');
     var $searchString = created[$relatedAttribute];
     var $appLang = element.attr('data-app-current-lang');
+    var $forceSelect = (element.attr('data-force-select') == 'true') ? true : false;
 
     //we run the promise with ajax call to search endpoint to check if we got the created entity back
     //in case we do, we add it to the selected options.
@@ -345,7 +346,7 @@ function ajaxSearch(element, created) {
                 }
         });
 
-        if(inCreated.length) {
+        if(inCreated.length && $forceSelect) {
             selectOption(element, created);
         }
     });

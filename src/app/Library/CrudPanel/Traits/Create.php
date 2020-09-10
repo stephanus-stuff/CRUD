@@ -4,6 +4,7 @@ namespace Backpack\CRUD\app\Library\CrudPanel\Traits;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Arr;
 
 trait Create
@@ -108,6 +109,7 @@ trait Create
     public function syncPivot($model, $data)
     {
         $fields_with_relationships = $this->getRelationFields();
+
         foreach ($fields_with_relationships as $key => $field) {
             if (isset($field['pivot']) && $field['pivot']) {
                 $values = isset($data[$field['name']]) ? $data[$field['name']] : [];
@@ -152,7 +154,7 @@ trait Create
     }
 
     /**
-     * Create any existing one to one relations for the current model from the relation data.
+     * Create any existing one to one or one to many relations for the current model from the relation data.
      *
      * @param \Illuminate\Database\Eloquent\Model $item          The current CRUD model.
      * @param array                               $formattedData The form data.
@@ -185,6 +187,21 @@ trait Create
                 } else {
                     $modelInstance = new $model($relationData['values']);
                     $relation->save($modelInstance);
+                }
+            } elseif ($relation instanceof HasMany) {
+                $modelInstance = $relation->getRelated();
+
+                if ($relationData['values'][$relationMethod] !== null) {
+                    $modelInstance->whereIn($modelInstance->getKeyName(), $relationData['values'][$relationMethod])
+                            ->update([$relation->getForeignKeyName() => $item->{$relation->getLocalKeyName()}]);
+                }else{
+                    //if the foreign key is not nullable we delete the record from the table.
+                    if(!$modelInstance->isColumnNullable($relation->getForeignKeyName())) {
+                        $modelInstance->where($relation->getForeignKeyName(), $item->{$relation->getLocalKeyName()})->delete();
+                    }else{
+                        $modelInstance->where($relation->getForeignKeyName(), $item->{$relation->getLocalKeyName()})
+                                ->update([$relation->getForeignKeyName() => null]);
+                    }
                 }
             }
 
@@ -219,22 +236,22 @@ trait Create
         foreach ($relation_fields as $relation_field) {
             $attributeKey = $this->parseRelationFieldNamesFromHtml([$relation_field])[0]['name'];
 
-            if (! is_null(Arr::get($data, $attributeKey)) && isset($relation_field['pivot']) && $relation_field['pivot'] !== true) {
+
+            if (isset($relation_field['pivot']) && $relation_field['pivot'] !== true) {
                 $key = implode('.relations.', explode('.', $this->getOnlyRelationEntity($relation_field)));
+
                 $fieldData = Arr::get($relationData, 'relations.'.$key, []);
-                if (! array_key_exists('model', $fieldData)) {
-                    $fieldData['model'] = $relation_field['model'];
-                }
-                if (! array_key_exists('parent', $fieldData)) {
-                    $fieldData['parent'] = $this->getRelationModel($attributeKey, -1);
-                }
+
+                $fieldData['model'] = $relation_field['model'];
+
+                $fieldData['parent'] = $this->getRelationModel($attributeKey, -1);
+
                 $relatedAttribute = Arr::last(explode('.', $attributeKey));
                 $fieldData['values'][$relatedAttribute] = Arr::get($data, $attributeKey);
 
                 Arr::set($relationData, 'relations.'.$key, $fieldData);
             }
         }
-
         return $relationData;
     }
 
