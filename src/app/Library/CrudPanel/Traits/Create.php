@@ -3,8 +3,8 @@
 namespace Backpack\CRUD\app\Library\CrudPanel\Traits;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Arr;
 
 trait Create
@@ -196,20 +196,20 @@ trait Create
                             ->update([$relation->getForeignKeyName() => $item->{$relation->getLocalKeyName()}]);
 
                     //we clear up any values that were removed from model relation.
-                    if(!$modelInstance->isColumnNullable($relation->getForeignKeyName())) {
+                    if (! $modelInstance->isColumnNullable($relation->getForeignKeyName())) {
                         $modelInstance->whereNotIn($modelInstance->getKeyName(), $relationData['values'][$relationMethod])
                                 ->where($relation->getForeignKeyName(), $item->{$relation->getLocalKeyName()})
                                 ->delete();
-                    }else{
+                    } else {
                         $modelInstance->whereNotIn($modelInstance->getKeyName(), $relationData['values'][$relationMethod])
                                 ->where($relation->getForeignKeyName(), $item->{$relation->getLocalKeyName()})
                                 ->update([$relation->getForeignKeyName() => null]);
                     }
-                }else{
+                } else {
                     //if the foreign key is not nullable we delete the record from the table.
-                    if(!$modelInstance->isColumnNullable($relation->getForeignKeyName())) {
+                    if (! $modelInstance->isColumnNullable($relation->getForeignKeyName())) {
                         $modelInstance->where($relation->getForeignKeyName(), $item->{$relation->getLocalKeyName()})->delete();
-                    }else{
+                    } else {
                         $modelInstance->where($relation->getForeignKeyName(), $item->{$relation->getLocalKeyName()})
                                 ->update([$relation->getForeignKeyName() => null]);
                     }
@@ -247,7 +247,6 @@ trait Create
         foreach ($relation_fields as $relation_field) {
             $attributeKey = $this->parseRelationFieldNamesFromHtml([$relation_field])[0]['name'];
 
-
             if (isset($relation_field['pivot']) && $relation_field['pivot'] !== true) {
                 $key = implode('.relations.', explode('.', $this->getOnlyRelationEntity($relation_field)));
 
@@ -263,6 +262,7 @@ trait Create
                 Arr::set($relationData, 'relations.'.$key, $fieldData);
             }
         }
+
         return $relationData;
     }
 
