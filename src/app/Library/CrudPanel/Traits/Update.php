@@ -26,14 +26,13 @@ trait Update
         $data = $this->compactFakeFields($data);
         $item = $this->model->findOrFail($id);
 
-        $this->createRelations($item, $data);
-
-        // omit the n-n relationships when updating the eloquent item
+        // save the item attributes (new or modified)
+        // minus the relationships
         $nn_relationships = Arr::pluck($this->getRelationFieldsWithPivot(), 'name');
+        $updated = $item->update(Arr::except($data, $nn_relationships));
 
-        $data = Arr::except($data, $nn_relationships);
-
-        $updated = $item->update($data);
+        // then sync the relationships
+        $this->createRelations($item, $data);
 
         return $item;
     }
