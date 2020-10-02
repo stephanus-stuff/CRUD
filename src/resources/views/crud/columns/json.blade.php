@@ -1,16 +1,14 @@
-@php
-    $value = is_string($entry->{$column['name']}) ? 
-                json_decode($entry->{$column['name']}, true) : 
-                $entry->{$column['name']};
-    $column['text'] = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    $column['escaped'] = $column['escaped'] ?? true;
-    $column['wrapper']['element'] = $column['wrapper']['element'] ?? 'pre';
-@endphp
+@push('crud_fields_styles')
+<link rel="stylesheet" href="{{ asset('packages/json-viewer/json-viewer.css') }}">
+@endpush
 
-@includeWhen(!empty($column['wrapper']), 'crud::columns.inc.wrapper_start')
-    @if($column['escaped'])
-        {{ $column['text'] }}
-    @else
-        {!! $column['text'] !!}
-    @endif
-@includeWhen(!empty($column['wrapper']), 'crud::columns.inc.wrapper_end')
+<div id="json"></div>
+
+@push('crud_fields_scripts')
+<script src="{{ asset('packages/json-viewer/json-viewer.js') }}"></script>
+<script>
+    var jsonViewer = new JSONViewer();
+    document.querySelector("#json").appendChild(jsonViewer.getContainer());
+    jsonViewer.showJSON(@json($entry), -1, -1);
+</script> 
+@endpush
